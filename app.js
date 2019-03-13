@@ -10,6 +10,9 @@ var usersRouter = require('./routes/users');
 
 var app = express();
 var bodyParser = require('body-parser');
+
+const mood = require('./routes/mood.route'); // Imports routes for the mood
+
 // use bodyParser for POST
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -17,15 +20,7 @@ app.use(bodyParser.json());
 const port = process.env.PORT || 3000
 
 // routes for API
-var router = express.Router();
-// test router
-router.get('/', function(req, res) {
-  res.json({message: 'On top of the world!'});
-})
-// prefix all routes with /api
-app.use('/api', router);
-
-app.get('/', (req, res) => res.send('Hello World!'))
+app.use('/moods', mood);
 
 app.listen(port, () => console.log(`Listening on port ${port}!`))
 
