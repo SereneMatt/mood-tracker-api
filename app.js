@@ -4,6 +4,13 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var MongoClient = require('mongodb').MongoClient;
+var url = 'mongodb://localhost/MoodDB';
+
+MongoClient.connect(url, function(err, db) {
+  console.log('Connected to DB');
+  db.close();
+});
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -23,6 +30,11 @@ const port = process.env.PORT || 3000
 app.use('/moods', mood);
 
 app.listen(port, () => console.log(`Listening on port ${port}!`))
+
+app.get('/', (req, res) => {
+  console.log('__dirname: ', __dirname);
+  res.sendFile(__dirname + '/index.html')
+});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
