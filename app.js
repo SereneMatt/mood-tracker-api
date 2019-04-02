@@ -1,4 +1,4 @@
-// packages
+// set up
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -6,6 +6,14 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var MongoClient = require('mongodb').MongoClient;
 var url = 'mongodb://localhost/MoodDB';
+var app = express();
+var mongoose = require('mongoose');
+var morgan = require('morgan');
+var bodyParser = require('body-parser');
+var methodOverride = require('method-override'); // for DELETE and PUT
+
+// configuration
+mongoose.connect('mongodb://node:nodeuser@mongo.onmodulus.net:27017/uwO3mypu');
 
 MongoClient.connect(url, function(err, db) {
   console.log('Connected to DB');
@@ -15,14 +23,14 @@ MongoClient.connect(url, function(err, db) {
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
-var app = express();
-var bodyParser = require('body-parser');
 
 const mood = require('./routes/mood.route'); // Imports routes for the mood
 
 // use bodyParser for POST
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ 'extended': 'true' }));
 app.use(bodyParser.json());
+app.use(bodyParser.json({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
+app.use(methodOverride());
 
 const port = process.env.PORT || 3000
 
@@ -30,9 +38,8 @@ const port = process.env.PORT || 3000
 app.use('/moods', mood);
 
 app.listen(port, () => console.log(`Listening on port ${port}!`))
-
+console.log('App listening on port ' + port);
 app.get('/', (req, res) => {
-  console.log('__dirname: ', __dirname);
   res.sendFile(__dirname + '/index.html')
 });
 
@@ -45,6 +52,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(morgan('dev'));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
