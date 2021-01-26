@@ -1,33 +1,47 @@
-// packages
+// set up
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var MongoClient = require('mongodb').MongoClient;
+var url = 'mongodb://localhost/MoodDB';
+var app = express();
+var mongoose = require('mongoose');
+var morgan = require('morgan');
+var bodyParser = require('body-parser');
+var methodOverride = require('method-override'); // for DELETE and PUT
+
+// configuration
+mongoose.connect('mongodb://node:nodeuser@mongo.onmodulus.net:27017/uwO3mypu');
+
+MongoClient.connect(url, function(err, db) {
+  console.log('Connected to DB');
+  db.close();
+});
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
-var app = express();
-var bodyParser = require('body-parser');
+
+const mood = require('./routes/mood.route'); // Imports routes for the mood
+
 // use bodyParser for POST
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ 'extended': 'true' }));
 app.use(bodyParser.json());
+app.use(bodyParser.json({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
+app.use(methodOverride());
 
 const port = process.env.PORT || 3000
 
 // routes for API
-var router = express.Router();
-// test router
-router.get('/', function(req, res) {
-  res.json({message: 'On top of the world!'});
-})
-// prefix all routes with /api
-app.use('/api', router);
-
-app.get('/', (req, res) => res.send('Hello World!'))
+app.use('/moods', mood);
 
 app.listen(port, () => console.log(`Listening on port ${port}!`))
+console.log('App listening on port ' + port);
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/index.html')
+});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -38,6 +52,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(morgan('dev'));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
